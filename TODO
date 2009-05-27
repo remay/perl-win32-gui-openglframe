@@ -10,6 +10,8 @@ Documentation
 
 Update UserData to implement class instance data
 
-
 glutVisibility function?
 
+Think about timing of animations
+
+demos/gasket.pl is a good example of where the drawing takes a long time, which makes resizeing of the windows jerky - look at how to disable drawing while resizing.
