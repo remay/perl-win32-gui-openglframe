@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 1);
+use Test::More (tests => 2);
 
 #Check that Win32::GUI::OpenGLFrame supplies the public API that
 #is advertised.
