@@ -1,0 +1,22 @@
+# Build by-products should be ignored
+Makefile
+blib/
+pm_to_blib
+demo_to_blib
+*.def
+*.bs
+
+# Generated files
+OpenGLFrame.c
+OpenGLFrame.rc
+
+# Build by-products (GCC)
+*.res
+*.o
+dll.base
+dll.exp
+
+# Build by-products (CL)
+*.RES
+*.obj
+*.pdb
