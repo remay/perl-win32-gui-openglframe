@@ -14,6 +14,15 @@ use Math::Trig;
 #
 # Translated from C to Perl by J-L Morel (jl_morel@bribes.org)
 # < http://www.bribes.org/perl/wopengl.html >
+#
+# Adapted to Win32::GUI::OpenGLFrame by Robert May (robertmay@cpan.org)
+
+# Win32::GUI Virtual Key constants
+sub VK_ESCAPE() {27}
+sub VK_LEFT()   {37}
+sub VK_UP()     {38}
+sub VK_RIGHT()  {39}
+sub VK_DOWN()   {40}
 
 #  Draw a gear wheel.  You'll probably want to call this function when
 #  building a display list since we do a lot of trig here.
@@ -23,13 +32,6 @@ use Math::Trig;
 #          width - width of gear
 #          teeth - number of teeth
 #          tooth_depth - depth of tooth
-
-# Win32::GUI Virtual Key constants
-sub VK_ESCAPE() {27}
-sub VK_LEFT()   {37}
-sub VK_UP()     {38}
-sub VK_RIGHT()  {39}
-sub VK_DOWN()   {40}
 
 sub gear {
   my($inner_radius, $outer_radius, $width, $teeth, $tooth_depth) = @_;
@@ -276,7 +278,7 @@ my $mw = Win32::GUI::Window->new(
   -title     => "Gears",
   -pos       => [0,0],
   -size      => [300,300],
-  -pushstyle => WS_CLIPCHILDREN,  #stop flickering
+  -pushstyle => WS_CLIPCHILDREN,  # stop flickering
   -onResize  => \&mainWinResize,
   -onKeyDown => \&KeyPressed,
   -onChar    => \&Char,

@@ -17,13 +17,11 @@ my @light_diffuse      = (1.0, 1.0, 1.0, 1.0);
 my @light_ambient      = (0.15, 0.15, 0.15, 0.15);
 my @light_specular     = (1.0, 1.0, 1.0, 1.0);
 
-glutInit();
-
 my $mw = Win32::GUI::Window->new(
 	-title => "OpenGL Demonstration",
 	-pos   => [100,100],
 	-size  => [400,400],
-	-pushstyle => WS_CLIPCHILDREN,  #stop flickering on resize
+	-pushstyle => WS_CLIPCHILDREN,  # stop flickering on resize
 	-onResize  => \&mainWinResize,
 );
 
@@ -78,6 +76,8 @@ sub reshape {
 }
 
 sub Init {
+    glutInit();
+
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glShadeModel(GL_SMOOTH);   
 	glEnable(GL_DEPTH_TEST);
@@ -101,7 +101,7 @@ sub display {
 	glRotatef($spin, 0.0, 1.0, 0.0);
 	glutSolidTeapot(1.0);
 	glPopMatrix();
-	#glutSwapBuffers();
+
 	w32gSwapBuffers();
 }
 

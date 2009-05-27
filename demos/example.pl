@@ -34,7 +34,7 @@ sub display {
 sub reshape {
     my ($width, $height) = @_;
 
-    $height = 1 if $height == 0;
+    $height = 1 if $height == 0; # Prevent div by zero below
 
     glViewport(0,0,$width,$height);
 
@@ -51,7 +51,7 @@ sub reshape {
 my $mw = Win32::GUI::Window->new(
     -title     => "Win32::GUI OpenGL Example",
     -size      => [400,400],
-    -pushstyle => WS_CLIPCHILDREN,  #stop flickering
+    -pushstyle => WS_CLIPCHILDREN,  # stop flickering
     -onResize  => \&mwResize,
 );
 

@@ -950,6 +950,8 @@ sub display {
 sub myinit {
   my $i = 1;
 
+  glutInit();
+
   $qobj = gluNewQuadric();
   SetMaterial(\@mat_specular2, \@mat_ambient2, \@mat_diffuse2, \@mat_shininess2);
   glEnable(GL_DEPTH_TEST);
@@ -1324,13 +1326,12 @@ $menu = Win32::GUI::Menu->new(
 # end of Win32::GUI menus
 
 # start of Win32::GUI windowing and control functions
-glutInit();
 
 my $mw = Win32::GUI::Window->new(
   -title     => "Vulcan Gunner - Win32::GUI port",
   -left      => CW_USEDEFAULT,
   -size      => [800,600],
-  -pushstyle => WS_CLIPCHILDREN,  #stop flickering
+  -pushstyle => WS_CLIPCHILDREN,  # stop flickering
   -menu      => $menu,
   -onResize  => sub { $_[0]->oglwin->Resize($_[0]->ScaleWidth(), $_[0]->ScaleHeight()) },
   -onKeyDown => \&KeyDown,

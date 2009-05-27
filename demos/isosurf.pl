@@ -233,7 +233,7 @@ my $mw = Win32::GUI::Window->new(
   -title     => "IsoSurface",
   -pos       => [0,0],
   -size      => [400,400],
-  -pushstyle => WS_CLIPCHILDREN,  #stop flickering
+  -pushstyle => WS_CLIPCHILDREN,  # stop flickering
   -onResize  => \&mainWinResize,
   -onKeyDown => \&Key,
 );

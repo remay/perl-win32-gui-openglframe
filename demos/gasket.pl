@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Win32::GUI qw(WS_CLIPCHILDREN);
+use Win32::GUI qw(CW_USEDEFAULT WS_CLIPCHILDREN);
 use Win32::GUI::OpenGLFrame();
 use OpenGL qw/ :all /;
 
@@ -41,24 +41,11 @@ sub display {
   glFlush(); # clear buffers 
 }
 
-# Standard GLUT initialization 
-
-#glutInit();
-#glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB); # default, not needed 
-#glutInitWindowSize(500,500); # 500 x 500 pixel window 
-#glutInitWindowPosition(0,0); # place window top left on display 
-#glutCreateWindow("Sierpinski Gasket"); # window title 
-#glutDisplayFunc(\&display);  # display callback invoked when window opened 
-
-#myinit();       # set attributes 
-
-#glutMainLoop(); # enter event loop 
-
 my $mw = Win32::GUI::Window->new(
   -title     => "Sierpinski Gasket",
-  -pos       => [0,0],
+  -left      => CW_USEDEFAULT,
   -size      => [500,500],
-  -pushstyle => WS_CLIPCHILDREN,  #stop flickering
+  -pushstyle => WS_CLIPCHILDREN,  # stop flickering
   -onResize  => \&mainWinResize,
 );
 
@@ -69,6 +56,7 @@ my $glw = $mw->AddOpenGLFrame(
   -doubleBuffer => 0,
   -init    => \&myinit,
   -display => \&display,
+  # default reshape routine fits viewport to window
 );
 
 $mw->Show();

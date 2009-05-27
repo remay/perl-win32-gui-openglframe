@@ -55,7 +55,7 @@ sub display {
 sub reshape {
     my ($width, $height) = @_;
 
-    $height = 1 if $height == 0;
+    $height = 1 if $height == 0; # Prevent div by zero below
 
     glViewport(0,0,$width,$height);
 

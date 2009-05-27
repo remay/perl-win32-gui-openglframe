@@ -341,20 +341,6 @@ sub keyboard {
   }
 }
 
-#glutInit();
-#glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-#glutInitWindowSize(300, 300);
-#glutCreateWindow('noof');
-#glutFullScreen();
-#myinit();
-#glutReshapeFunc(\&myReshape);
-#glutDisplayFunc(\&display);
-#glutKeyboardFunc(\&keyboard);
-#glutVisibilityFunc(\&visibility);
-#glutIdleFunc(\&oneFrame);
-#glutPostRedisplay();
-#glutMainLoop();
-  
 my $mw = Win32::GUI::Window->new(
 	-title     => 'noof',
 
