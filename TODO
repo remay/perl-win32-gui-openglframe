@@ -1,0 +1,15 @@
+test multiple instances!
+
+add tests
+
+Documentation
+- where to get OpenGL for windows
+- what exports are suitable (some glut, but not others;  Swapbuffers etc.)
+- export of w32gSwapbuffers vs. glutSwapBuffers
+- Instructions for porting from glut applications
+
+Update UserData to implement class instance data
+
+
+glutVisibility function?
+
