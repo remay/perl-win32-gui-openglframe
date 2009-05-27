@@ -3,7 +3,7 @@ TYPEMAP
 HWND         T_HANDLE
 HDC          T_HANDLE
 HGLRC        T_HANDLE
-BOOL         T_IV
+BOOL         T_BOOL
 GLint        T_IV
 GLsizei      T_IV
 GLbitfield   T_IV
