@@ -25,6 +25,7 @@ use Math::Trig;
 #
 # Re-coded from Perl OpenGL package to Win32::GUI::OpenGLFrame
 # by Robert May (robertmay@cpan.org)
+# C code can be seen here: http://www.oreillynet.com/network/2000/06/23/magazine/cube.c
 
 use constant PROGRAM_TITLE => "O'Reilly Net: OpenGL Demo -- C.Halsall";
 
@@ -247,7 +248,7 @@ sub cbRenderScene {
 
   # Now we set up a new projection for the text.
   glLoadIdentity();
-  glOrtho(0,$Window_Width,0,$Window_Height,-1.0,1.0);
+  glOrtho(0,$obj->ScaleWidth(),0,$obj->ScaleHeight(),-1.0,1.0);
 
   # Lit or textured text looks awful.
   glDisable(GL_TEXTURE_2D);
@@ -283,7 +284,7 @@ sub cbRenderScene {
   # To ease, simply translate up.  Note we're working in screen
   # pixels in this projection.
 
-  glTranslatef(6.0,$Window_Height - 14,0.0);
+  glTranslatef(6.0,$obj->ScaleHeight() - 14,0.0);
 
   # Make sure we can read the FPS section by first placing a
   # dark, mostly opaque backdrop rectangle.
@@ -334,8 +335,7 @@ sub cbKeyPressed {
     if ( ++ $Curr_TexMode > 3 ) {
       $Curr_TexMode=0;
     }
-    #TODO?
-    #glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,$TexModes[$Curr_TexMode]);
+    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,$TexModes[$Curr_TexMode]);
   }
   elsif ($vkey == ord 'T') {        # T - Texturing.
     $Texture_On = $Texture_On ? 0 : 1;
@@ -434,8 +434,8 @@ sub ourBuildTextures {
   glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
   glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
 
-  # We start with GL_DECAL mode.
-  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
+  # We start with GL_DECAL mode (or whatever).
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,$TexModes[$Curr_TexMode]);
 }
 
 # ------
@@ -457,8 +457,6 @@ sub cbResizeScene {
 
   glMatrixMode(GL_MODELVIEW);
 
-  $Window_Width  = $Width;
-  $Window_Height = $Height;
 }
 
 # ------
@@ -466,7 +464,9 @@ sub cbResizeScene {
 # OpenGL event loop.
 
 sub ourInit {
-  my ($Width, $Height) = @_;
+  my ($obj) = @_;
+
+  glutInit();
 
   ourBuildTextures();
 
@@ -481,7 +481,7 @@ sub ourInit {
   glShadeModel(GL_SMOOTH);
 
   # Load up the correct perspective matrix; using a callback directly.
-  cbResizeScene($Width, $Height);
+  cbResizeScene($obj->ScaleWidth(), $obj->ScaleHeight());
 
   # Set up a light, turn it on.
   glLightfv_p(GL_LIGHT1, GL_POSITION, @Light_Position);
@@ -494,33 +494,6 @@ sub ourInit {
   glEnable(GL_COLOR_MATERIAL);
 }
 
-# ------
-# The main() function.  Inits OpenGL.  Calls our own init function,
-# then passes control onto OpenGL.
-
-
-glutInit();
-
-# To see OpenGL drawing, take out the GLUT_DOUBLE request.
-#glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-#glutInitWindowSize($Window_Width, $Window_Height);
-
-# Open a window
-#$Window_ID = glutCreateWindow( PROGRAM_TITLE );
-
-# Register the callback function to do the drawing.
-#glutDisplayFunc(\&cbRenderScene);
-
-# If there's nothing to do, draw.
-#glutIdleFunc(\&cbRenderScene);
-
-# It's a good idea to know when our window's resized.
-#glutReshapeFunc(\&cbResizeScene);
-
-# And let's get some keyboard input.
-#glutKeyboardFunc(\&cbKeyPressed);
-#glutSpecialFunc(\&cbSpecialKeyPressed);
-
 #Use arrow keys to rotate, 'R' to reverse, 'S' to stop.
 #Page up/down will move cube away from/towards camera.
 #Use first letter of shown display mode settings to alter.
@@ -529,7 +502,7 @@ glutInit();
 my $mw = Win32::GUI::Window->new(
 	-title     => PROGRAM_TITLE,
 	-pos       => [100,100],
-	-size      => [400,400],
+	-size      => [$Window_Width,$Window_Height],
 	-pushstyle => WS_CLIPCHILDREN,  #stop flickering
 	-onResize  => \&mainWinResize,
 	-onKeyDown => \&cbKeyPressed,
@@ -540,7 +513,7 @@ my $glw = $mw->AddOpenGLFrame(
 	-width   => $mw->ScaleWidth(),
 	-height  => $mw->ScaleHeight(),
 	-doubleBuffer => 1,
-	-init    => sub { ourInit($Window_Width, $Window_Height) },
+	-init    => \&ourInit,
 	-display => \&cbRenderScene,
 	-reshape => \&cbResizeScene,
 );
