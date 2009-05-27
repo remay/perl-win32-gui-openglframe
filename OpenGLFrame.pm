@@ -8,17 +8,15 @@ use 5.006;
 use strict;
 use warnings;
 
-use Win32::GUI qw(WS_OVERLAPPEDWINDOW WS_CHILD WS_CLIPCHILDREN WS_CLIPSIBLINGS);
-require Exporter;
-our @ISA = qw(Exporter Win32::GUI::Window);
-sub CS_OWNDC()           {32}
-
-our @EXPORT_OK = qw(w32gSwapBuffers);
-
-our $WINDOW_CLASS;
 our $VERSION = "0.00_01";
 our $XS_VERSION = $VERSION;
 $VERSION = eval $VERSION;
+
+use Win32::GUI qw(WS_OVERLAPPEDWINDOW WS_CHILD WS_CLIPCHILDREN WS_CLIPSIBLINGS);
+our @ISA = qw(Win32::GUI::Window);
+
+use Exporter qw(import);
+our @EXPORT_OK = qw(w32gSwapBuffers);
 
 require XSLoader;
 XSLoader::load('Win32::GUI::OpenGLFrame', $XS_VERSION);
@@ -26,6 +24,9 @@ XSLoader::load('Win32::GUI::OpenGLFrame', $XS_VERSION);
 sub Win32::GUI::Window::AddOpenGLFrame {
     return Win32::GUI::OpenGLFrame->new(@_);
 }
+
+sub CS_OWNDC()           {32}
+our $WINDOW_CLASS;
 
 sub new {
     my $class = shift;
@@ -51,45 +52,64 @@ sub new {
         -pushstyle => WS_CHILD|WS_CLIPCHILDREN|WS_CLIPSIBLINGS,
         -class => $WINDOW_CLASS,
         -visible => 1,
-        -onPaint => \&_paint,
-        -onResize => \&_resize,
         %options,
     );
-    $self->{-display} = $displayfunc;
-    $self->{-reshape} = $reshapefunc;
-
-    # TODO - don't want to destroy the DC
-    my $dc = $self->GetDC();
-    $self->{-dc} = $dc->{-handle};
 
     # Set a suitable Pixel format
-    $self->_SetOpenGLPixelFormat($doubleBuffer, $depthFlag) or die "SetOpenGLPixelFormat failed: $^E";
+    my $dc = $self->_SetOpenGLPixelFormat($doubleBuffer, $depthFlag) or die "SetOpenGLPixelFormat failed: $^E";
 
     # Create an OpenGL rendering context for this window, and
     # activate it
-    $self->{-rc} = wglCreateContext($self->{-dc}) or die "wglCreateContext: $^E";
-    wglMakeCurrent($self->{-dc}, $self->{-rc}) or die "wglMakeCurrent: $^E";
+    my $rc = wglCreateContext($dc) or die "wglCreateContext: $^E";
+    wglMakeCurrent($dc, $rc) or die "wglMakeCurrent: $^E";
 
-    $initfunc->() if $initfunc;
-    $reshapefunc->($self->ScaleWidth(), $self->ScaleHeight()) if $reshapefunc;
+    # Store away our class instance data
+    $self->ClassData( {
+            dc      => $dc,
+            rc      => $rc,
+            display => $displayfunc,
+            reshape => $reshapefunc,
+        } );
 
+    # Call our initialisation function
+    $initfunc->($self) if $initfunc;
+
+    # Now that we've got everything initialised, register our _paint and _resize
+    # handlers.
+    $self->SetEvent("Paint", \&_paint);
+    $self->SetEvent("Resize", \&_resize);
+    
+    # Ensure that out paint and resize (reshape) handers get called once.
+    $self->_resize();
+    $self->InvalidateRect(0);
+    
     return $self;
 }
 
 sub DESTROY {
     my ($self) = @_;
 
-    wglMakeCurrent();  # remove the current rendering context
-    wglDeleteContext($self->{-rc});
-    #TODO release DC!
+    # my $idata = $self->ClassData();
+    # Previous line shows a bug in ClassData, where _UserData() can return undef if the
+    # window has been destroyed and the perlud structure de-allocated.  We do our own thing
+    # here for now:
+    # XXX Submit patch to Win32::GUI to fix ClassData()
+    my $idata;
+    if (my $tmp = $self->_UserData()) {
+        $idata = $tmp->{__PACKAGE__};
+    }
+
+    if(defined $idata) {
+        wglMakeCurrent();  # remove the current rendering context
+        wglDeleteContext($idata->{rc});
+        Win32::GUI::DC::ReleaseDC($self, $idata->{dc}); # not necessary, but good form
+    }
 
     $self->SUPER::DESTROY(@_); # pass destruction up the chain
 }
 
 ######################################################################
 # Static (non-method) functions
-# TODO why did I do this - is it to avoid clashing with OpenGL's
-# SwapBuffers??
 ######################################################################
 sub w32gSwapBuffers
 {
@@ -109,15 +129,18 @@ sub _paint {
     my ($self, $dc) = @_;
     $dc->Validate();
 
-    wglMakeCurrent($self->{-dc}, $self->{-rc}) or die "wglMakeCurrent: $^E";
-    if ($self->{-display}) {
-        $self->{-display}->($self);
+    my $idata = $self->ClassData();
+
+    wglMakeCurrent($idata->{dc}, $idata->{rc}) or die "wglMakeCurrent: $^E";
+
+    if ($idata->{display}) {
+        $idata->{display}->($self);
         glFlush();
     }
     else {
-        # default: clear all buffers, and diaplay
+        # default: clear all buffers, and display
         glClear();
-	w32gSwapBuffers();
+        w32gSwapBuffers();
     }
 
     return 0;
@@ -125,15 +148,17 @@ sub _paint {
 
 sub _resize {
     my ($self) = @_;
-    if($self->{-handle} and $self->{-dc} and $self->{-rc}) {
-        wglMakeCurrent($self->{-dc}, $self->{-rc}) or die "wglMakeCurrent: $^E";
-        if ($self->{-reshape}) {
-            $self->{-reshape}->($self->ScaleWidth(), $self->ScaleHeight())
-        }
-        else {
+
+    my $idata = $self->ClassData();
+
+    wglMakeCurrent($idata->{dc}, $idata->{rc}) or die "wglMakeCurrent: $^E";
+
+    if ($idata->{reshape}) {
+        $idata->{reshape}->($self->ScaleWidth(), $self->ScaleHeight())
+    }
+    else {
 	    # default: resize viewport to window
-            glViewport(0,0,$self->ScaleWidth(),$self->ScaleHeight());
-        }
+        glViewport(0,0,$self->ScaleWidth(),$self->ScaleHeight());
     }
 
     return 1;
