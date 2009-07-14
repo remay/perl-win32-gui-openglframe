@@ -33,6 +33,15 @@ sub new {
     my $parent = shift;
     my %options = @_;
 
+    if(exists $options{-resize}) {
+        require Carp();
+        Carp::Croak("-resize option is invalid");
+    }
+    if(exists $options{-paint}) {
+        require Carp();
+        Carp::Croak("-paint option is invalid");
+    }
+
     my $displayfunc = delete($options{-display});
     my $initfunc = delete($options{-init});
     my $reshapefunc = delete($options{-reshape});
@@ -65,7 +74,7 @@ sub new {
 
     # Store away our class instance data
     $self->ClassData( {
-            dc      => $dc,
+            dc      => $dc,           # We used a class with CS_OWNDC, so can store the DC
             rc      => $rc,
             display => $displayfunc,
             reshape => $reshapefunc,
@@ -75,7 +84,8 @@ sub new {
     $initfunc->($self) if $initfunc;
 
     # Now that we've got everything initialised, register our _paint and _resize
-    # handlers.
+    # handlers.  We don't do this earlier, else they may get called before we're
+    # ready to handle the events.
     $self->SetEvent("Paint", \&_paint);
     $self->SetEvent("Resize", \&_resize);
     
@@ -173,13 +183,107 @@ Win32::GUI::OpenGLFrame - Integrate OpenGL with Win32::GUI
 
 =head1 SYNOPSIS
 
+  use Win32::GUI::OpenGLFrame qw(w32gSwapBuffers);
+
+  my $oglw = $win->AddOpenGLFrame(...);
+
 =head1 DESCRIPTION
+
+Win32::GUI::OpenGLFrame provides a binding between the perl OpenGL module and
+Win32::GUI.  If all you want is windows with OpenGL content, the the OpenGL
+module provides a binding to the Win32 glut windowing library.  This module
+will be useful if the OpenGL content is a smaller part of your GUI - I.e.
+you want to mix OpenGL output with other Win32 controls.
+
+The interface should be mostly familar to anyone with Win32::GUI experience,
+although it has been modified to try to make it more intuitave for those used
+to programming with the glut interface.
+
+Familarity with both Win32::GUI and the perl OpenGL bindings are assumed.
 
 =head1 EXPORTS
 
+The function c<w32gSwapBuffers> is exportable on request - nothing is exported by default.
+
 =head1 AVAILABLE FUNCTIONS
 
+=head2 w32gSwapBuffers
+
+This function swaps the front and back buffers on a double-buffered rendering context. Acts
+on the curretly active rendering context.  It does nothing (and so is safe to call) on a
+single buffered rendering context.  Equivilent to the glutSwapBuffers() function.
+
+=head1 Win32::GUI::OpenGLFrame Object
+
+=head2 Constructor: $win->AddOpenGLFrame()
+
+Creates a child window of c<$win> with an OpenGL rendering context associated with the window.
+Most of the standard Win32::GUI::Window options are available with the following additions and
+restrictions:
+
+=over
+
+=item Use C<-init> for OpenGL initialisation function
+
+The C<-init> option supplies a function callback in which OpenGL initialiastion can be performed.
+The OpenGL rendering context is createed and made currrent before the callback is made.  This is
+typically used for initialising views, textures etc.
+
+The Win32::GUI::OpenGLFrame object is passed as the only parameter into the C<-init> callback.
+
+=item Use C<-reshape> rather than C<-resize>
+
+This corresponds to the glut resize event handler.  The OpenGL rendering context for the
+window is made active before the callback is made.  The width and height of the window's
+client area are provied as parameters to the callback.
+
+If no handler is supplied, the default handler make the OpenGL viewport match the size
+of the window.
+
+It is an error to use the C<-reszie> option.
+
+=item Use C<-display> rather than C<-paint>
+
+This corresponds to the glud display event handler.  The OpenGL rendering context for the
+window is made active before the callback is made.  The Win32::GUI::OpenGLFrame object
+is passed as the only parameter in the <-display> callback.
+
+If no hander is supplied, the deafult handler clears the view.
+
+It is an error to use the C<-paint> option.
+
+=item C<-doublebuffer>
+
+The <-doublebuffer> option is a boolean indicating whether the created rendering context
+should be double buffered or not.
+
+=item C<-depth>
+
+The <-depth> option is a boolean indicating whether a depth buffer should be requested.  If it is
+then a 32-bit depth buffer s requested.
+
+=back
+
 =head1 SEE ALSO
+
+See the demos distributed with the module for further inspiration.  If you have a recent Win32::GUI installation
+then try the demo browser by issuing the following command:
+
+  C:\> win32-gui-demos
+
+=over
+
+=item OpenGL - L<http://www.opengl.org/>
+
+=item Perl OpenGL (POGL) - L<http://graphcomp.com/opengl/>
+
+=item OpenGL for Win32 - L<http://www.bribes.org/perl/wopengl.html>
+
+=item The OpenGL Utility Toolkit (GLUT) - L<http://www.opengl.org/resources/libraries/glut/>
+
+=item OpenGL on MSDN - L<http://msdn.microsoft.com/en-gb/library/dd374278%28VS.85%29.aspx>
+
+=back
 
 =head1 SUPPORT
 

@@ -32,6 +32,7 @@ DEPENDENCIES
     Config (in core since 5.3.7)
     Exporter (in core since 5.0)
     XSLoader (in core since 5.6.0)
+    Carp (in core since 5.0)
     strict (in core since 5.0)
     warnings (in core since 5.6.0)
 
