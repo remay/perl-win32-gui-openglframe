@@ -8,7 +8,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = "0.01";
+our $VERSION = "0.02";
 our $XS_VERSION = $VERSION;
 $VERSION = eval $VERSION;
 
@@ -33,11 +33,11 @@ sub new {
     my $parent = shift;
     my %options = @_;
 
-    if(exists $options{-resize}) {
+    if(exists $options{-onResize}) {
         require Carp;
         Carp::Croak("-resize option is invalid");
     }
-    if(exists $options{-paint}) {
+    if(exists $options{-onPaint}) {
         require Carp;
         Carp::Croak("-paint option is invalid");
     }
@@ -231,7 +231,7 @@ typically used for initialising views, textures etc.
 
 The Win32::GUI::OpenGLFrame object is passed as the only parameter into the C<-init> callback.
 
-=item Use C<-reshape> rather than C<-resize>
+=item Use C<-reshape> rather than C<-onResize>
 
 This corresponds to the glut resize event handler.  The OpenGL rendering context for the
 window is made active before the callback is made.  The width and height of the window's
@@ -240,9 +240,9 @@ client area are provied as parameters to the callback.
 If no handler is supplied, the default handler make the OpenGL viewport match the size
 of the window.
 
-It is an error to use the C<-reszie> option.
+It is an error to use the C<-onReszie> option.
 
-=item Use C<-display> rather than C<-paint>
+=item Use C<-display> rather than C<-onPaint>
 
 This corresponds to the glud display event handler.  The OpenGL rendering context for the
 window is made active before the callback is made.  The Win32::GUI::OpenGLFrame object
@@ -250,7 +250,7 @@ is passed as the only parameter in the <-display> callback.
 
 If no hander is supplied, the deafult handler clears the view.
 
-It is an error to use the C<-paint> option.
+It is an error to use the C<-onPaint> option.
 
 =item C<-doublebuffer>
 
