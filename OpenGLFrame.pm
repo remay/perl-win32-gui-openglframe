@@ -34,11 +34,11 @@ sub new {
     my %options = @_;
 
     if(exists $options{-resize}) {
-        require Carp();
+        require Carp;
         Carp::Croak("-resize option is invalid");
     }
     if(exists $options{-paint}) {
-        require Carp();
+        require Carp;
         Carp::Croak("-paint option is invalid");
     }
 
