@@ -16,6 +16,7 @@ LICENCE
 Makefile.PL
 MANIFEST			This list of files
 OpenGLFrame.pm
+OpenGLFrame.rc
 OpenGLFrame.version.PL
 OpenGLFrame.xs
 ppport.h
