@@ -1,6 +1,7 @@
 demos/cube.pl
-demos/example.plx
-demos/example2.plx
+demos/example.pl
+demos/example2.pl
+demos/example3.pl
 demos/gasket.pl
 demos/gears.pl
 demos/gears2.pl
@@ -12,8 +13,8 @@ demos/teapot.pl
 Makefile.PL
 MANIFEST			This list of files
 OpenGLFrame.pm
+OpenGLFrame.version.PL
 OpenGLFrame.xs
-OpenGLFrameRC.PL
 ppport.h
 t/01_load.t
 t/02_public_api.t

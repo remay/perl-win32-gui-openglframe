@@ -3,29 +3,58 @@ use strict;
 use warnings;
 
 use 5.006;
-use Config;
 use ExtUtils::MakeMaker;
+use Config;
 use File::Find();
+
+unless ($^O eq "MSWin32" || $^O eq "cygwin") {
+    die "OS unsupported\n";
+}
 
 my @demos;
 File::Find::find(sub { push @demos, $File::Find::name unless -d $_ }, 'demos');
+
+my $mm_ver = $ExtUtils::MakeMaker::VERSION;
+if ($mm_ver =~ /_/) { # dev version
+    $mm_ver = eval $mm_ver;
+    die $@ if $@;
+}
 
 my %config = (
     NAME          =>  'Win32::GUI::OpenGLFrame',
     VERSION_FROM  =>  'OpenGLFrame.pm',
     ABSTRACT_FROM =>  'OpenGLFrame.pm',
     AUTHOR        =>  'Robert May <robertmay@cpan.org>',
+
+    # MIN_PERL_VERSION
+    ($mm_ver >= 6.48 ? (MIN_PERL_VERSION => '5.006') : ()),
+
+    # LICENSE
+    ($mm_ver >= 6.31 ? (LICENSE => 'perl') : ()),
+
     PREREQ_PM     => {'Win32::GUI' => 0,
                       'OpenGL'     => 0,},
 
-    PL_FILES      => {'OpenGLFrameRC.PL' => '$(BASEEXT).rc', },
+    PL_FILES      => {'$(BASEEXT).version.PL' => '$(BASEEXT).version', },
+    depend        => {'$(BASEEXT).res' => '$(BASEEXT).version', },
     OBJECT        =>  '$(BASEEXT)$(OBJ_EXT) $(BASEEXT).res',
     LIBS          =>  '-lopengl32',
     macro         => {RC => 'rc.exe',
                       RCFLAGS => '',
                       INST_DEMODIR => '$(INST_LIB)/Win32/GUI/demos/$(BASEEXT)',
                       DEMOS => "@demos" },
-    clean         => {FILES => '*.rc *.res', },
+    clean         => {FILES => '$(BASEEXT).version', },
+
+    # META_MERGE
+    ($mm_ver <= 6.45 ? () : (META_MERGE => {
+        resources => {
+            license     =>      'http://dev.perl.org/licenses/',
+            homepage    =>      'http://rob.themayfamily.me.uk/win32-gui/win32-gui-openglframe',
+            bugtracker  =>      'http://rt.cpan.org/Public/Bug/Report.html?Queue=Win32-GUI-OpenGLFrame',
+            repository  =>      'http://github.com/remay/perl-win32-gui-openglframe',
+                     },
+    })),
+    
 );
 
 # if building using gcc (MinGW or cygwin) use windres
@@ -44,12 +73,8 @@ package MY;
 sub postamble {
   return <<'__POSTAMBLE';
 
-# Win32::GUI::OpenGLFrame RC section
-
 .rc.res:
 	$(RC) $(RCFLAGS) $<
-
-# Win32::GUI::OpenGLFrame demo script section
 
 pure_all :: demo_to_blib
 	$(NOECHO) $(NOOP)
